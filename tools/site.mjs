@@ -92,8 +92,12 @@ export function renderSite(data, pages, letters = []) {
     <td class="num"><span class="mobile-label">Repository stars </span>${mod.stars == null ? 'Unknown' : Number(mod.stars).toLocaleString('en')}</td></tr>`
   const heading = sortable => `<thead><tr><th scope="col">${sortable ? '<button type="button" data-k="name">Mod <svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M5 12V3L2 6m3-3 3 3m3-2v9l-3-3m3 3 3-3"/></svg></button>' : 'Mod'}</th><th scope="col">What it does</th><th scope="col">${sortable ? '<button type="button" data-k="level">Access <svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M5 12V3L2 6m3-3 3 3m3-2v9l-3-3m3 3 3-3"/></svg></button>' : 'Access'}</th><th scope="col" class="num">${sortable ? '<button type="button" data-k="stars">Repo stars <svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M5 12V3L2 6m3-3 3 3m3-2v9l-3-3m3 3 3-3"/></svg></button>' : 'Repo stars'}</th></tr></thead>`
   const segments = [...mods].sort((a, b) => (hasFootprint(a) ? a.reach.level : 4) - (hasFootprint(b) ? b.reach.level : 4)).map(mod => `<a class="seg l${levelOf(mod)}" href="#${esc(slug(mod))}" title="${esc(mod.name)}: ${hasFootprint(mod) ? 'L' + mod.reach.level + ' ' : ''}${esc(reachText(mod))}" aria-label="${esc(mod.name)}: ${esc(hasFootprint(mod) ? levels[mod.reach.level] : 'Unknown access')}" data-level="${levelOf(mod)}"></a>`)
-  const title = `Awesome Claude Code Mods | ${mods.length} Claude Code mods, scanned`
-  const description = `An awesome list of ${mods.length} Claude Code mods built with function hooks. Browse public plugins scanned from GitHub and see what each can access.`
+  // One claim, worded the same on GitHub, the site, llms.txt and the social card, so search engines and assistants
+  // describe the catalogue in one voice. The count is live; the repo About carries a floor instead.
+  const n = mods.length.toLocaleString('en')
+  const claim = `${n} Claude Code mods, with what each one can access before you install it. Context meters, status lines, guards and more, with install hints.`
+  const title = `Awesome Claude Code Mods | ${n} mods and what each can access`
+  const description = claim
   const jsonLd = JSON.stringify({
     '@context': 'https://schema.org',
     '@graph': [
@@ -126,7 +130,7 @@ export function renderSite(data, pages, letters = []) {
 <style>${css}</style></head><body>
 <a class="skip" href="#directory">Skip to the mod directory</a>
 <div class="mast"><header class="shell"><a href="./" class="brand" aria-label="Claude Mods home">${mark}<span>claude<span class="brand-light">mods</span></span></a><nav aria-label="Main navigation"><a href="#directory">The collection</a><a href="#about">About mods</a><a class="github-link" href="${repo}" aria-label="Star the Claude Code mods list on GitHub">${star}Star on GitHub</a></nav></header>
-</div><main><div class="mast"><section class="hero shell" aria-labelledby="title"><div class="hero-intro"><h1 id="title">Awesome<br><span>Claude Code Mods</span></h1><p>Make Claude Code your own. A community catalogue of Claude Code mods built with function hooks, scanned from public GitHub repositories, with what each mod can access.</p></div>
+</div><main><div class="mast"><section class="hero shell" aria-labelledby="title"><div class="hero-intro"><h1 id="title">Awesome<br><span>Claude Code Mods</span></h1><p>Make Claude Code your own. ${n} mods scanned from public GitHub repositories, with what each one can access before you install it. Context meters, status lines, guards and more, with install hints.</p></div>
 <section class="finder" aria-labelledby="finder-title"><div class="finder-intro"><h2 id="finder-title">Ask Claude to find a mod</h2><p>Search this catalogue from your Claude session, with matches and their recorded access.</p><p class="finder-example">Try “Find a mod that helps with code reviews”.</p><p class="finder-credit"><a href="${repo}/tree/main/finder">mod-finder</a>, built by <a href="https://github.com/karanb192">Karan Bansal</a>, the catalogue maintainer.</p></div>
 <details class="finder-setup"><summary>Set up mod-finder</summary><p>Install in a Claude Code terminal session and complete the installation prompts.</p><div class="finder-command"><div class="finder-command-actions" hidden><span id="finder-copy-status" role="status"></span><button id="finder-copy" type="button" aria-label="Copy install command">Copy</button></div><pre><code id="finder-command"><span>/plugin</span> <span>install</span> <span>mod-finder</span> <span>--marketplace</span> <span>karanb192/</span><wbr><span>awesome-claude-code-mods</span></code></pre></div><p>Then run <code>/reload-plugins</code> before asking for a mod. Requires Node 18 or later.</p><p>The plugin runs a local MCP server that downloads this catalogue from GitHub and caches it on your computer. It gives Claude two read-only tools to search the catalogue and look up individual mods.</p><p><a href="${repo}/blob/main/finder/README.md#in-claude-code-mcp">Setup and Desktop instructions</a></p></details></section>
 </section></div>
@@ -178,7 +182,7 @@ export function renderLlms(data) {
   const starred = [...mods].filter(mod => mod.stars != null).sort((a, b) => b.stars - a.stars).slice(0, 25)
   return `# Awesome Claude Code Mods
 
-> A community list of ${mods.length} Claude Code mods (function hooks), scanned from public GitHub repositories with what each mod can read, write, run or send over the network. An independent scan, not an official Anthropic directory. Last scanned ${date} on Claude Code ${data.claudeVersion}.
+> ${mods.length.toLocaleString('en')} Claude Code mods, with what each one can access before you install it. Context meters, status lines, guards and more, with install hints. Scanned from public GitHub repositories with claude plugin validate; an independent scan, not an official Anthropic directory. Last scanned ${date} on Claude Code ${data.claudeVersion}.
 
 Mods are Claude Code plugins whose JavaScript or TypeScript hooks run inside a session. They need Claude Code 2.1.287 or later and are on by default. Each entry records the hooks and API calls reported by \`claude plugin validate\`. Access levels describe the widest reach of those calls and are not safety ratings. An unavailable or incomplete footprint has unknown access, not L0; recorded calls may show only part of its access. Mods per level: ${byLevel}.
 
