@@ -74,9 +74,12 @@ const BROWSE_ORDER = [...'abcdefghijklmnopqrstuvwxyz', '0-9', 'other']
 export const browseKeys = records => BROWSE_ORDER.filter(key => records.some(mod => browseKey(mod.name) === key))
 // letters: the browse keys that have a page, from browseKeys over the records the A to Z pages list.
 export const browseNav = (letters, current) => `<div class="browse" role="navigation" aria-label="Browse all mods from A to Z"><span>Browse A to Z</span>${letters.map(key => key === current ? `<b aria-current="page">${key.toUpperCase()}</b>` : `<a href="/browse/${key}/">${key === 'other' ? 'Other' : key.toUpperCase()}</a>`).join('')}</div>`
+// topics: the topic pages to link, as { slug, short }; the row is empty when no topic has a listed mod.
+export const topicNav = (topics, current) => topics.length ? `<div class="browse topics" role="navigation" aria-label="Browse mods by topic"><span>Browse by topic</span>${topics.map(topic => topic.slug === current ? `<b aria-current="page">${esc(topic.short)}</b>` : `<a href="/topics/${esc(topic.slug)}/">${esc(topic.short)}</a>`).join('')}</div>` : ''
 
-// Returns the homepage and the parts of the full rows and strip it loads. letters: the A to Z pages to link.
-export function renderSite(data, pages, letters = []) {
+// Returns the homepage and the parts of the full rows and strip it loads. letters: the A to Z pages to link;
+// topics: the topic pages to link.
+export function renderSite(data, pages, letters = [], topics = []) {
   const mods = data.mods.filter(mod => mod.kind === 'mod')
   const builtins = data.mods.filter(mod => mod.kind === 'builtin')
   const keys = siteAnchors(data.mods)
@@ -92,8 +95,12 @@ export function renderSite(data, pages, letters = []) {
     <td class="num"><span class="mobile-label">Repository stars </span>${mod.stars == null ? 'Unknown' : Number(mod.stars).toLocaleString('en')}</td></tr>`
   const heading = sortable => `<thead><tr><th scope="col">${sortable ? '<button type="button" data-k="name">Mod <svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M5 12V3L2 6m3-3 3 3m3-2v9l-3-3m3 3 3-3"/></svg></button>' : 'Mod'}</th><th scope="col">What it does</th><th scope="col">${sortable ? '<button type="button" data-k="level">Access <svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M5 12V3L2 6m3-3 3 3m3-2v9l-3-3m3 3 3-3"/></svg></button>' : 'Access'}</th><th scope="col" class="num">${sortable ? '<button type="button" data-k="stars">Repo stars <svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M5 12V3L2 6m3-3 3 3m3-2v9l-3-3m3 3 3-3"/></svg></button>' : 'Repo stars'}</th></tr></thead>`
   const segments = [...mods].sort((a, b) => (hasFootprint(a) ? a.reach.level : 4) - (hasFootprint(b) ? b.reach.level : 4)).map(mod => `<a class="seg l${levelOf(mod)}" href="#${esc(slug(mod))}" title="${esc(mod.name)}: ${hasFootprint(mod) ? 'L' + mod.reach.level + ' ' : ''}${esc(reachText(mod))}" aria-label="${esc(mod.name)}: ${esc(hasFootprint(mod) ? levels[mod.reach.level] : 'Unknown access')}" data-level="${levelOf(mod)}"></a>`)
-  const title = `Awesome Claude Code Mods | ${mods.length} Claude Code mods, scanned`
-  const description = `An awesome list of ${mods.length} Claude Code mods built with function hooks. Browse public plugins scanned from GitHub and see what each can access.`
+  // One claim, worded the same on GitHub, the site, llms.txt and the social card, so search engines and assistants
+  // describe the catalogue in one voice. The count is live; the repo About carries a floor instead.
+  const n = mods.length.toLocaleString('en')
+  const claim = `${n} Claude Code mods, with what each one can access before you install it. Context and usage meters, prompt cache warmers, status lines, guards and more, with install hints.`
+  const title = `Awesome Claude Code Mods | ${n} mods and what each can access`
+  const description = claim
   const jsonLd = JSON.stringify({
     '@context': 'https://schema.org',
     '@graph': [
@@ -126,12 +133,12 @@ export function renderSite(data, pages, letters = []) {
 <style>${css}</style></head><body>
 <a class="skip" href="#directory">Skip to the mod directory</a>
 <div class="mast"><header class="shell"><a href="./" class="brand" aria-label="Claude Mods home">${mark}<span>claude<span class="brand-light">mods</span></span></a><nav aria-label="Main navigation"><a href="#directory">The collection</a><a href="#about">About mods</a><a class="github-link" href="${repo}" aria-label="Star the Claude Code mods list on GitHub">${star}Star on GitHub</a></nav></header>
-</div><main><div class="mast"><section class="hero shell" aria-labelledby="title"><div class="hero-intro"><h1 id="title">Awesome<br><span>Claude Code Mods</span></h1><p>Make Claude Code your own. A community catalogue of Claude Code mods built with function hooks, scanned from public GitHub repositories, with what each mod can access.</p></div>
+</div><main><div class="mast"><section class="hero shell" aria-labelledby="title"><div class="hero-intro"><h1 id="title">Awesome<br><span>Claude Code Mods</span></h1><p>Make Claude Code your own. ${n} mods scanned from public GitHub repositories, with what each one can access before you install it. Context and usage meters, prompt cache warmers, status lines, guards and more, with install hints.</p></div>
 <section class="finder" aria-labelledby="finder-title"><div class="finder-intro"><h2 id="finder-title">Ask Claude to find a mod</h2><p>Search this catalogue from your Claude session, with matches and their recorded access.</p><p class="finder-example">Try “Find a mod that helps with code reviews”.</p><p class="finder-credit"><a href="${repo}/tree/main/finder">mod-finder</a>, built by <a href="https://github.com/karanb192">Karan Bansal</a>, the catalogue maintainer.</p></div>
 <details class="finder-setup"><summary>Set up mod-finder</summary><p>Install in a Claude Code terminal session and complete the installation prompts.</p><div class="finder-command"><div class="finder-command-actions" hidden><span id="finder-copy-status" role="status"></span><button id="finder-copy" type="button" aria-label="Copy install command">Copy</button></div><pre><code id="finder-command"><span>/plugin</span> <span>install</span> <span>mod-finder</span> <span>--marketplace</span> <span>karanb192/</span><wbr><span>awesome-claude-code-mods</span></code></pre></div><p>Then run <code>/reload-plugins</code> before asking for a mod. Requires Node 18 or later.</p><p>The plugin runs a local MCP server that downloads this catalogue from GitHub and caches it on your computer. It gives Claude two read-only tools to search the catalogue and look up individual mods.</p><p><a href="${repo}/blob/main/finder/README.md#in-claude-code-mcp">Setup and Desktop instructions</a></p></details></section>
 </section></div>
 <section class="directory shell" id="directory" aria-labelledby="directory-title"><div class="section-heading"><div><h2 id="directory-title">The collection<span class="total">${mods.length}</span></h2><p>Find something useful. See what it can access.</p></div><a href="${repo}/blob/main/contributing.md">Submit a mod ${arrow}</a></div>
-${browseNav(letters)}
+${browseNav(letters)}${topicNav(topics)}
 <div class="catalog-search"><form class="search" role="search" action="#directory"><label class="sr-only" for="q">Search mods by name, repo or description</label><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 5 5"/></svg><input id="q" name="q" type="search" placeholder="Search by name or what it does" autocomplete="off" aria-controls="t"><button id="clear-search" class="clear-search" type="button" aria-label="Clear search" hidden><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="m6 6 12 12M6 18 18 6"/></svg></button></form>
 <div class="result-bar"><span id="n" role="status" aria-live="polite">${mods.length} mods</span><div><button id="reset" type="button" hidden>Clear filters</button><span>Scanned <time datetime="${esc(date)}">${dateLabel}</time></span></div></div></div>
 <div class="filter-heading"><span>Filter by access</span><a href="#method">How we check ${arrow}</a></div><div class="legend" role="group" aria-label="Filter by reach level or directory listing"><button type="button" class="lv all" data-level="" aria-pressed="true">All mods</button>${accessGroups(mods).map(({ label, level, count }) => `<button type="button" class="lv" data-level="${level}" aria-pressed="false"><i class="l${level}"></i><span>${label}</span><b>${count}</b></button>`).join('')}<button type="button" class="lv listed-filter" aria-pressed="false"><span>In Anthropic directory</span><b>${mods.filter(mod => mod.directory).length}</b></button></div>
@@ -169,7 +176,8 @@ Sitemap: ${site}sitemap.xml
 }
 
 // llms.txt (llmstxt.org): what an agent needs to describe or query the list without parsing the page.
-export function renderLlms(data) {
+// topics: the topic pages with listed mods, as { slug, short, summary }.
+export function renderLlms(data, topics = []) {
   const mods = data.mods.filter(mod => mod.kind === 'mod')
   const date = data.generated.slice(0, 10)
   const byLevel = accessGroups(mods).map(({ label, level, count }) => `${level === 'unknown' ? '' : 'L' + level + ' '}${label}: ${count}`).join(', ')
@@ -178,7 +186,7 @@ export function renderLlms(data) {
   const starred = [...mods].filter(mod => mod.stars != null).sort((a, b) => b.stars - a.stars).slice(0, 25)
   return `# Awesome Claude Code Mods
 
-> A community list of ${mods.length} Claude Code mods (function hooks), scanned from public GitHub repositories with what each mod can read, write, run or send over the network. An independent scan, not an official Anthropic directory. Last scanned ${date} on Claude Code ${data.claudeVersion}.
+> ${mods.length.toLocaleString('en')} Claude Code mods, with what each one can access before you install it. Context and usage meters, prompt cache warmers, status lines, guards and more, with install hints. Scanned from public GitHub repositories with claude plugin validate; an independent scan, not an official Anthropic directory. Last scanned ${date} on Claude Code ${data.claudeVersion}.
 
 Mods are Claude Code plugins whose JavaScript or TypeScript hooks run inside a session. They need Claude Code 2.1.287 or later and are on by default. Each entry records the hooks and API calls reported by \`claude plugin validate\`. Access levels describe the widest reach of those calls and are not safety ratings. An unavailable or incomplete footprint has unknown access, not L0; recorded calls may show only part of its access. Mods per level: ${byLevel}.
 
@@ -189,7 +197,11 @@ Mods are Claude Code plugins whose JavaScript or TypeScript hooks run inside a s
 - [catalogue.md](${rawCatalogue}): the same catalogue as Markdown tables
 - [What can a Claude Code mod access?](${site}access/): how mods get access, what the four levels mean and what the scan found across the catalogue
 - [README](${repo}#readme): Featured picks, how to use mods, how the scan works
+${topics.length ? `
+## Topics
 
+${topics.map(topic => `- [${topic.short} mods](${site}topics/${topic.slug}/): ${topic.summary}`).join('\n')}
+` : ''}
 ## Ask Claude to find a mod
 
 Install mod-finder in a Claude Code terminal session with \`/plugin install mod-finder --marketplace karanb192/awesome-claude-code-mods\`, complete the installation prompts, then run \`/reload-plugins\` before asking “Find a mod that helps with code reviews”. It requires Node 18 or later. For Desktop Code local sessions, follow the terminal installation route in the setup guide below.

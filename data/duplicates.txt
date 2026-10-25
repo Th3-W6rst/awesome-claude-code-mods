@@ -115,3 +115,9 @@ satoramoto/awesome-claude:mods/lab satoramoto/awesome-claude:plugins/lab
 satoramoto/awesome-claude:mods/launcher satoramoto/awesome-claude:plugins/launcher
 satoramoto/awesome-claude:mods/overview satoramoto/awesome-claude:plugins/overview
 Abdallah-Abdelazim/usage-limits-cc-mod:. Abdallah-Abdelazim/usage-limits-cc-mod:plugins/usage-limits
+HMarzban/claude-mod:plugins/session-usage-band HMarzban/claude-mod:plugins/nextcost
+tyree88/tempered_plugins:followups tyree88/tempered_plugins:mods/followups
+tyree88/tempered_plugins:lessons tyree88/tempered_plugins:mods/lessons
+tyree88/tempered_plugins:limit-resume tyree88/tempered_plugins:mods/limit-resume
+tyree88/tempered_plugins:ship-state tyree88/tempered_plugins:mods/ship-state
+tyree88/tempered_plugins:timeline tyree88/tempered_plugins:mods/timeline

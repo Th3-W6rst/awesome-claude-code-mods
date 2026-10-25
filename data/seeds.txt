@@ -16,6 +16,7 @@ apolenkov/agent-compact-advisor
 apolenkov/agent-council
 apolenkov/agent-shell-watch
 Arjun0014/project-sentinel
+arturogarrido/claudinho
 Ashley-Pettit/lgtm-flash
 Ashley-Pettit/villager-hp
 atharv6f/headway
@@ -31,6 +32,7 @@ danilpavlov/telescope-claude-code
 danzerzine/claude-council
 DarkVelours/claude-code-galactic-battle
 dominicrico/jev-router
+dophamine/claude-suggest
 dot-agi/arrester
 dot-agi/downrange
 dot-agi/high-command
@@ -106,6 +108,7 @@ scaso01/claude-risk-guardrails
 shimo4228/harness-scope
 shohamtal/cc-mod-opensearch-console
 Shuffzord/RoadRaven
+Sma1lboy/claude-standup
 somethingwentwell/cc-mod-banana-game
 Sumit189/explain-claude-mod
 SummerRiversound/review-inbox
